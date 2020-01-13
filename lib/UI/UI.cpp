@@ -109,8 +109,34 @@ void UI::update()
     }
     else if (panel == CONT)
     {
-
+      if (node[c_panel.index].data == 0)
+      {
+        node[c_panel.index].data = 1;
+        if(node[c_panel.index].type == FAN)
+        {
+          node[c_panel.index].titlePic = "/FAN/Fan_GREEN_Hover.png";
+        }
+        else if(node[c_panel.index].type == AIR)
+        {
+          node[c_panel.index].titlePic = "/AIR/Air_GREEN_Hover.png";
+        }
+        
+      }
+      else
+      {
+        node[c_panel.index].data = 0;
+        if(node[c_panel.index].type == FAN)
+        {
+          node[c_panel.index].titlePic = "/FAN/Fan_GREEN.png";
+        }
+       
+        else if(node[c_panel.index].type == 2)
+        {
+          node[c_panel.index].titlePic = "/AIR/Air_GREEN.png";
+        }
+      }
       this->c_panel.lastIndex = -1;
+      
     }
     else if (panel == SETT)
     {
@@ -390,6 +416,7 @@ void UI::node_init(uint8_t size)
   for (int i = 0; i < size; i++)
   {
     this->node[i].EN = true;
+    this->node[i].data = 0;
   }
   this->c_panel.size = size;
 }
@@ -416,6 +443,26 @@ void UI::node_setTitle(uint8_t index, String title_1st, String title_2nd)
   example: "/test1.png"
   *** 103 x 103 pixels image
 */
+
+void UI::node_setType(uint8_t index, uint8_t typeSelect)
+{
+  if (node[index].EN)
+  {
+    this->node[index].type = typeSelect;
+    if(typeSelect == 1)
+    {
+      node_setTitlePic(index,"/FAN/Fan_GREEN.png");
+    }
+    else if(typeSelect == 2) //Air
+    {
+      node_setTitlePic(index,"/AIR/Air_GREEN.png");
+    }
+    else
+    {
+
+    }
+  }
+}
 void UI::node_setTitlePic(uint8_t index, char *path)
 {
   if (node[index].EN)

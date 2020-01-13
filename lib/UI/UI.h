@@ -61,6 +61,11 @@
 
 #define MAX_NODE 32
 #define MAX_SUB 32
+#define FAN 1
+#define AIR 2
+#define LIGHT 3
+
+
 struct Node
 {
   bool EN = false;
@@ -74,6 +79,8 @@ struct Node
   uint16_t title1stColor = WHITE;
   uint16_t title2ndColor = WHITE;
   uint8_t titleSize = 2;
+  uint8_t data = 0;
+  uint8_t type; // 1 : Fan, 2 : Air, 3 : Light
 };
 
 class UI
@@ -98,6 +105,7 @@ public:
   void node_setTitleColor(uint8_t index,uint16_t title_1st, uint16_t title_2nd);
   void node_setAllTitleColor(uint16_t title_1st, uint16_t title_2nd);
   void node_setTitlePic(uint8_t index, char *path);
+  void node_setType(uint8_t index, uint8_t typeSelect);
 
 private:
 //custom RGB565
