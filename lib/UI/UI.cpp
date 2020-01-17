@@ -52,6 +52,9 @@ void UI::begin(bool LCDEnable, bool SDEnable, bool SerialEnable)
   {
     Serial.println("OK");
   }
+
+  batt.Begin();
+
   this->period = 1000 / refreshRate;
 }
 
@@ -66,7 +69,10 @@ void UI::update()
   if (BtnA.wasPressed())
   {
     if (panel != MAIN)
+    {
       Lcd.fillRect(0, 0, 320, 218, backgroundColor);
+      this->m.lastLevel = -1;
+    }
     if (panel == STAT)
     {
 
@@ -90,6 +96,7 @@ void UI::update()
     if (panel == MAIN)
     {
       Lcd.fillRect(0, 0, 320, 218, backgroundColor);
+      this->m.lastLevel = -1;
       if (m_panel.select == 0b100)
       { //status
         this->panel = STAT;
@@ -109,34 +116,9 @@ void UI::update()
     }
     else if (panel == CONT)
     {
-      if (node[c_panel.index].data == 0)
-      {
-        node[c_panel.index].data = 1;
-        if(node[c_panel.index].type == FAN)
-        {
-          node[c_panel.index].titlePic = "/FAN/Fan_GREEN_Hover.png";
-        }
-        else if(node[c_panel.index].type == AIR)
-        {
-          node[c_panel.index].titlePic = "/AIR/Air_GREEN_Hover.png";
-        }
-        
-      }
-      else
-      {
-        node[c_panel.index].data = 0;
-        if(node[c_panel.index].type == FAN)
-        {
-          node[c_panel.index].titlePic = "/FAN/Fan_GREEN.png";
-        }
-       
-        else if(node[c_panel.index].type == 2)
-        {
-          node[c_panel.index].titlePic = "/AIR/Air_GREEN.png";
-        }
-      }
+      this->node[c_panel.index].data = !node[c_panel.index].data;
       this->c_panel.lastIndex = -1;
-      
+      this->m.lastLevel = -1;
     }
     else if (panel == SETT)
     {
@@ -305,7 +287,10 @@ void UI::cont_panel()
 
     Lcd.fillRoundRect(160 - 75, 120 - 75, 150, 150, 5, c_panel.fillColor);
     Lcd.drawRoundRect(160 - 75, 120 - 75, 150, 150, 5, c_panel.lineColor);
-    Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic, 160 - 75 + 22, 120 - 75 + 3);
+    if(!node[c_panel.index].data)
+      Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic, 160 - 75 + 22, 120 - 75 + 3);
+    else
+      Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic_Hover, 160 - 75 + 22, 120 - 75 + 3);
     Lcd.setTextSize(node[c_panel.index].titleSize);
     Lcd.setCursor(160 - 75 + 5, 120 + 75 - 10 - 10 - 20);
     Lcd.print(node[c_panel.index].title_1st);
@@ -332,6 +317,8 @@ void UI::sett_panel()
 
 void UI::menu_disp()
 {
+  //battery indicator
+  batteryUpdate();
   //box
   if (m.fillColor != BLACK)
   {
@@ -374,6 +361,24 @@ void UI::menu_disp()
   Lcd.print(m.rightText);
 }
 
+void UI::batteryUpdate()
+{
+  Lcd.drawRoundRect(270, 8, 38, 17, 5, m.battFillColor);
+  uint8_t currentLevel = batt.getLevel();
+  if(currentLevel <= 25){
+    this->m.battFillColor = m.lowBattFillColor; 
+  }
+  else{
+    this->m.battFillColor = m.defaultBattFillColor;
+  }
+  if (currentLevel != m.lastLevel)
+  {
+    Lcd.fillRoundRect(272, 10, 34 * currentLevel / 100, 13, 3, m.fillColor);
+    Lcd.fillRoundRect(272, 10, 34 * currentLevel / 100, 13, 3, m.battFillColor);
+    this->m.lastLevel = currentLevel;
+  }
+}
+
 bool UI::tick_frame()
 {
   if (millis() - time > period)
@@ -413,6 +418,7 @@ void UI::framerate_update()
 */
 void UI::node_init(uint8_t size)
 {
+  this->node_size = size;
   for (int i = 0; i < size; i++)
   {
     this->node[i].EN = true;
@@ -437,37 +443,33 @@ void UI::node_setTitle(uint8_t index, String title_1st, String title_2nd)
       this->node[index].title_2nd = title_2nd;
   }
 }
-
-/*set node title picture at specific index
-  put png file in data folder and put the path here
-  example: "/test1.png"
-  *** 103 x 103 pixels image
+/*set node type for different control
+  FAN   -> 4 level control 
+  AIR   -> on/off and temperature control
+  LIGHT -> on/off and color control
 */
-
 void UI::node_setType(uint8_t index, uint8_t typeSelect)
 {
   if (node[index].EN)
   {
     this->node[index].type = typeSelect;
-    if(typeSelect == 1)
-    {
-      node_setTitlePic(index,"/FAN/Fan_GREEN.png");
-    }
-    else if(typeSelect == 2) //Air
-    {
-      node_setTitlePic(index,"/AIR/Air_GREEN.png");
-    }
-    else
-    {
-
-    }
   }
 }
-void UI::node_setTitlePic(uint8_t index, char *path)
+/*set node title picture at specific index
+  put png file in data folder and put the path here
+  example: "/test1.png"
+
+  base_path   -> path for off/default status picture
+  hover_path  -> path for on/selected status picture
+
+  *** 103 x 103 pixels image
+*/
+void UI::node_setTitlePic(uint8_t index, char *base_path, char *hover_path)
 {
   if (node[index].EN)
   {
-    this->node[index].titlePic = path;
+    this->node[index].titlePic = base_path;
+    this->node[index].titlePic_Hover = hover_path;
   }
 }
 

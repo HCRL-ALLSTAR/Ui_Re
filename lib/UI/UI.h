@@ -57,6 +57,7 @@
 #include "Display.h"
 #include "utility/Config.h"
 #include "utility/Button.h"
+#include "utility/Battery.h"
 #include "Free_Fonts.h"
 
 #define MAX_NODE 32
@@ -74,6 +75,7 @@ struct Node
   };
   Sub_node sub[MAX_SUB];
   char*  titlePic;
+  char* titlePic_Hover;
   String title_1st;
   String title_2nd;
   uint16_t title1stColor = WHITE;
@@ -100,11 +102,16 @@ public:
   // LCD
   Display Lcd = Display();
 
+  //Battery
+  Battery batt = Battery();
+
+  //Node
+  uint8_t node_size;
   void node_init(uint8_t size = 1);
   void node_setTitle(uint8_t index, String title_1st = "", String title_2nd = "");
   void node_setTitleColor(uint8_t index,uint16_t title_1st, uint16_t title_2nd);
   void node_setAllTitleColor(uint16_t title_1st, uint16_t title_2nd);
-  void node_setTitlePic(uint8_t index, char *path);
+  void node_setTitlePic(uint8_t index, char *base_path, char *hover_path);
   void node_setType(uint8_t index, uint8_t typeSelect);
 
 private:
@@ -135,6 +142,10 @@ private:
     const String NEXT = "  Next  ";
     uint16_t fillColor = BLACK;
     uint16_t lineColor = WHITE;
+    uint16_t battFillColor = WHITE;
+    uint16_t defaultBattFillColor = WHITE;
+    uint16_t lowBattFillColor = RED;
+    int8_t lastLevel = -1;
     bool leftBtn_visible = true;
     bool midBtn_visible = true;
     bool rightBtn_visible = true;
@@ -147,6 +158,7 @@ private:
   };
   Menu m;
   void menu_disp();
+  void batteryUpdate();
   //
   bool tick_frame();
   void framerate_update();
