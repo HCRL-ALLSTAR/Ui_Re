@@ -28,11 +28,17 @@ MotionClass::~MotionClass()
 {
 }
 
+/*
+    Begin Motion Sensor
+*/
 void MotionClass::Begin()
 {
     pinMode(36, INPUT);
     xTaskCreate(UpdateCode, "Motion Update Task", Default_Task_Stack, this, 1, &UpdateHandle);
 }
+/*
+    Get Current Value ( 0 || 1 )
+*/
 int MotionClass::GetValue()
 {
     return this->value;

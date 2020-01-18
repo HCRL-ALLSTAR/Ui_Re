@@ -44,28 +44,40 @@ void WiFiTask::BeginCode(void *pv)
 
 /*
     start connect to wift with ssid and password
-    SSID (char *)     = wifi name
-    Password (char *) = wifi password
+    SSID        -> wifi name
+    Password    -> wifi password
 */
 void WiFiTask::Begin(const char *SSID, const char *PASSWORD)
 {
     this->SSID = (char *)SSID;
     this->PASSWORD = (char *)PASSWORD;
-    xTaskCreate(BeginCode, "Begin Task", Default_Task_Stack * 2, this, 30, &BeginHandle);
+    xTaskCreate(BeginCode, "Begin Task", Default_Task_Stack * 2, this, 30, &BeginHandle); // Create Task Wifi Connection
+
     while (!WiFi.isConnected())
     {
         /* code */
     }
 }
 
+/*
+    Get wifi status 
+    0 -> not connect
+    1 -> connected
+*/
 boolean WiFiTask::getStatus()
 {
     return this->wrapper.Connected();
 }
+/* 
+    Get SSID 
+*/
 char *WiFiTask::getSSID()
 {
     return this->wrapper.getSSID();
 }
+/* 
+    Get Password
+*/
 char *WiFiTask::getPASSWORD()
 {
     return this->wrapper.getPASSWORD();

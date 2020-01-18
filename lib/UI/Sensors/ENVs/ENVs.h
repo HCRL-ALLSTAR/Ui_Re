@@ -41,6 +41,9 @@ ENVs::~ENVs()
 {
 }
 
+/*
+    Begin ENV Sensor Task
+*/
 void ENVs::Begin()
 {
     Wire.begin();
@@ -50,14 +53,26 @@ void ENVs::Begin()
     }
     xTaskCreate(UpdateCode, "ENV Update Task", Default_Task_Stack, this, 1, &UpdateHandle);
 }
+
+/*
+    Get Current Temperature in c
+*/
 float ENVs::GetTemp()
 {
     return this->temp;
 }
+
+/*
+    Get Current Humidity
+*/
 float ENVs::GetHumi()
 {
     return this->humi;
 }
+
+/*
+    Get Current Pressure in Pa
+*/
 float ENVs::GetPressure()
 {
     return this->pressure;

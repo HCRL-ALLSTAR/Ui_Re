@@ -28,12 +28,19 @@ AngleClass::~AngleClass()
 {
 }
 
+/*
+    Begin angle sensor Task
+*/
 void AngleClass::Begin()
 {
     pinMode(sensorPin, INPUT);
     dacWrite(25, 0);
     xTaskCreate(UpdateCode, "Angle Update Task", Default_Task_Stack, this, 1, &UpdateHandle);
 }
+
+/*
+    Get Current Angle Value
+*/
 int AngleClass::GetValue()
 {
     return this->last_sensorValue;

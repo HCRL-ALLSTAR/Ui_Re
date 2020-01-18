@@ -23,10 +23,6 @@ public:
     void SetBrightness(int Value);
 };
 
-void LedRGBClass::SetBrightness(int Value)
-{
-    this->pixels.setBrightness(Value);
-}
 LedRGBClass::LedRGBClass(/* args */)
 {
     this->pixels = Adafruit_NeoPixel(this->NumPixels, this->LedPin, NEO_GRB + NEO_KHZ800);
@@ -35,11 +31,7 @@ LedRGBClass::LedRGBClass(/* args */)
 LedRGBClass::~LedRGBClass()
 {
 }
-void LedRGBClass::Begin()
-{
-    pixels.begin();
-    xTaskCreate(UpdateCode, "Pixels Update Task", Default_Task_Stack, this, 1, &UpdateHandle);
-}
+
 void LedRGBClass::UpdateCode(void *pv)
 {
     LedRGBClass *task = (LedRGBClass *)(pv);
@@ -50,9 +42,35 @@ void LedRGBClass::UpdateCode(void *pv)
         TaskDelay(delay_Time);
     }
 }
+
+/*
+    Begin Led RGB
+*/
+void LedRGBClass::Begin()
+{
+    pixels.begin();
+    xTaskCreate(UpdateCode, "Pixels Update Task", Default_Task_Stack, this, 1, &UpdateHandle);
+}
+
+/*
+    Set Color of each Led 
+    n -> order of number (start 0)
+    r -> Red (max 255)
+    g -> Green (max 255)
+    b -> Blue (max 255)
+*/
 void LedRGBClass::setPixelsColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b)
 {
     this->pixels.setPixelColor(n, r, g, b);
+}
+
+/*
+    Set Brightness of all led
+    value -> Brightness value (max 255)
+*/
+void LedRGBClass::SetBrightness(int Value)
+{
+    this->pixels.setBrightness(Value);
 }
 
 #endif

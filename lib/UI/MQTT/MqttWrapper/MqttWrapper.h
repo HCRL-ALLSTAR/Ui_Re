@@ -18,6 +18,8 @@ private:
 
     void Add2List(String *List, const char *Topic);
     void PrintList(String *List);
+    char *UserName;
+    char *Password;
 
 public:
     PubSubClient mqtt;
@@ -30,7 +32,7 @@ public:
     void Publish(const char *Topic, const char *Payload);
     void ReConnect();
     void Update();
-
+    void SetUser(const char *UserName, const char *Password);
     void PrintSubscribeTopic();
     void PrintPublishTopic();
     boolean isConnected();
@@ -81,6 +83,11 @@ void MqttWrapper::Publish(const char *Topic, const char *Payload)
     this->mqtt.publish(Topic, Payload);
 }
 
+void MqttWrapper::SetUser(const char *UserName, const char *Password)
+{
+    this->UserName = (char *)UserName;
+    this->Password = (char *)Password;
+}
 void MqttWrapper::ReConnect()
 {
     int Index = 0;
@@ -90,7 +97,7 @@ void MqttWrapper::ReConnect()
         String clientId = "ESP8266Client-";
         clientId += String(random(0xffff), HEX);
 
-        if (this->mqtt.connect(clientId.c_str()))
+        if (int(this->UserName) == 0 && int(this->Password) == 0 ? this->mqtt.connect(clientId.c_str()) : this->mqtt.connect(clientId.c_str(), this->UserName, this->Password))
         {
             Sprintln("Connected");
 
