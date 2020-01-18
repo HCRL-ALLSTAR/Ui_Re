@@ -68,7 +68,7 @@ void UI::update()
   //control
   if (BtnA.wasPressed())
   {
-    if (panel != MAIN)
+    if (panel != MAIN && sub_panel == MAIN)
     {
       Lcd.fillRect(0, 0, 320, 218, backgroundColor);
       this->m.lastLevel = -1;
@@ -80,9 +80,15 @@ void UI::update()
     }
     if (panel == CONT)
     {
-
-      this->c_panel.lastIndex = -1;
-      this->panel = MAIN;
+      if(sub_panel == MAIN)
+      {
+        this->c_panel.lastIndex = -1;
+        this->panel = MAIN;
+      }
+      else if(sub_panel == AIRCONT)
+      {
+        this->node[c_panel.index].temp_data -= 1;
+      }
     }
     if (panel == SETT)
     {
@@ -91,7 +97,34 @@ void UI::update()
     }
   }
 
-  if (BtnB.wasPressed())
+  if(BtnB.pressedFor(RETURN_MS))
+  {
+    if(panel == MAIN)
+    {
+
+    }
+    else if(panel == STAT)
+    {
+    }
+    else if (panel == CONT)
+    {
+      if(node[c_panel.index].type == AIR && sub_panel == MAIN)
+      {
+        Lcd.setTextColor(backgroundColor);
+        Lcd.setTextSize(2);
+        Lcd.setCursor(5, 221);
+        Lcd.print(m.leftText);
+        Lcd.setCursor(219, 221);
+        Lcd.print(m.rightText);
+        this->sub_panel = AIRCONT;
+        this->return_ac = millis();
+      }
+    }
+    else if (panel == SETT)
+    {
+    }
+  }
+  else if (BtnB.wasReleased())
   {
     if (panel == MAIN)
     {
@@ -104,6 +137,8 @@ void UI::update()
       else if (m_panel.select == 0b010)
       { //control
         this->panel = CONT;
+        this->node[c_panel.index].last_data = -1;
+        this->node[c_panel.index].last_temp_data = -1;
       }
       else
       { //settings
@@ -114,11 +149,35 @@ void UI::update()
     else if (panel == STAT)
     {
     }
-    else if (panel == CONT)
+    else if (panel == CONT && millis() - return_ac > AC_RETURN_MS)
     {
-      this->node[c_panel.index].data = !node[c_panel.index].data;
-      this->c_panel.lastIndex = -1;
+      if(sub_panel == MAIN)
+      {
+        if(node[c_panel.index].type == FAN)
+        {
+          this->node[c_panel.index].data++;
+          if (node[c_panel.index].data == 4)
+            this->node[c_panel.index].data = 0;
+        }
+        else
+          this->node[c_panel.index].data = !node[c_panel.index].data;
+      }
+      else if(sub_panel == AIRCONT)
+      {
+        Lcd.setTextColor(backgroundColor);
+        Lcd.setTextSize(2);
+        Lcd.setCursor(5, 221);
+        Lcd.print(m.leftText);
+        Lcd.setCursor(219, 221);
+        Lcd.print(m.rightText);
+        this->sub_panel = MAIN;
+      }
+
+      if (node[c_panel.index].type == LIGHT || node[c_panel.index].data == 0 || node[c_panel.index].data == 1)
+        this->c_panel.lastIndex = -1;
       this->m.lastLevel = -1;
+      this->node[c_panel.index].last_data = -1;
+      this->node[c_panel.index].last_temp_data = -1;
     }
     else if (panel == SETT)
     {
@@ -129,8 +188,18 @@ void UI::update()
   {
     if (panel == CONT)
     {
-      this->c_panel.index = 0;
-      this->return_c = millis();
+      if (sub_panel == MAIN)
+      {
+        this->c_panel.index = 0;
+        this->return_c = millis();
+
+        this->node[c_panel.index].last_data = -1;
+        this->node[c_panel.index].last_temp_data = -1;
+      }
+      else if (sub_panel == AIRCONT)
+      {
+
+      }
     }
   }
   else if (BtnC.wasReleased())
@@ -143,9 +212,19 @@ void UI::update()
     }
     if (panel == CONT && millis() - return_c > POS_RETURN_MS)
     {
-      this->c_panel.index += 1;
-      if (c_panel.index == c_panel.size)
-        this->c_panel.index = 0;
+      if (sub_panel == MAIN)
+      {
+        this->c_panel.index += 1;
+        if (c_panel.index == c_panel.size)
+          this->c_panel.index = 0;
+
+        this->node[c_panel.index].last_data = -1;
+        this->node[c_panel.index].last_temp_data = -1;
+      }
+      else if (sub_panel == AIRCONT)
+      {
+        this->node[c_panel.index].temp_data += 1;
+      }
     }
   }
   //main
@@ -251,6 +330,17 @@ void UI::stat_panel()
 
 void UI::cont_panel()
 {
+  if(sub_panel == MAIN)
+  {
+    this->m.leftText = m.BACK;
+    this->m.rightText = m.NEXT;
+  }
+  else if(sub_panel == AIRCONT)
+  {
+    this->m.leftText = m.MINUS;
+    this->m.rightText = m.PLUS;
+  }
+
   m.leftBtn_enable = true;
   m.midBtn_enable = true;
   m.rightBtn_enable = true;
@@ -287,10 +377,43 @@ void UI::cont_panel()
 
     Lcd.fillRoundRect(160 - 75, 120 - 75, 150, 150, 5, c_panel.fillColor);
     Lcd.drawRoundRect(160 - 75, 120 - 75, 150, 150, 5, c_panel.lineColor);
+
+    uint8_t offset_x;
+    if(!node[c_panel.index].type){
+      offset_x = 0;
+    }else{
+      offset_x = 18;
+    }
     if(!node[c_panel.index].data)
-      Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic, 160 - 75 + 22, 120 - 75 + 3);
+      Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic, 160 - 75 + 22 - offset_x, 120 - 75 + 3);
     else
-      Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic_Hover, 160 - 75 + 22, 120 - 75 + 3);
+      Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic_Hover, 160 - 75 + 22 - offset_x, 120 - 75 + 3);
+
+    if(node[c_panel.index].type == FAN)
+    {
+      Lcd.setTextColor(m.lineColor);
+      Lcd.setTextSize(2);
+      Lcd.setCursor(160 - 75 + 113 - 1, 120 - 75 + 12);
+      Lcd.print(c_panel.up);
+      Lcd.setCursor(160 - 75 + 113 - 1, 120 - 75 + 3 + 26 + 57);
+      Lcd.print(c_panel.down);
+
+      Lcd.drawRoundRect(160 - 75 + 113, 120 - 75 + 3 + 26, 33, 17, 5, c_panel.lineColor);
+      Lcd.drawRoundRect(160 - 75 + 113, 120 - 75 + 3 + 26 + 19, 33, 17, 5, c_panel.lineColor);
+      Lcd.drawRoundRect(160 - 75 + 113, 120 - 75 + 3 + 26 + 38, 33, 17, 5, c_panel.lineColor);
+    }
+    else if (node[c_panel.index].type == AIR)
+    {
+      Lcd.setTextColor(m.lineColor);
+      Lcd.setTextSize(2);
+      Lcd.setCursor(160 - 75 + 113 - 1, 120 - 75 + 12);
+      Lcd.print(c_panel.up);
+      Lcd.setCursor(160 - 75 + 113 - 1, 120 - 75 + 3 + 26 + 57);
+      Lcd.print(c_panel.down);
+
+      Lcd.drawRoundRect(160 - 75 + 113, 120 - 75 + 3 + 26, 33, 51, 5, c_panel.lineColor);
+    }
+    
     Lcd.setTextSize(node[c_panel.index].titleSize);
     Lcd.setCursor(160 - 75 + 5, 120 + 75 - 10 - 10 - 20);
     Lcd.print(node[c_panel.index].title_1st);
@@ -299,6 +422,54 @@ void UI::cont_panel()
     Lcd.print(node[c_panel.index].title_2nd);
 
     this->c_panel.lastIndex = c_panel.index;
+  }
+  if (node[c_panel.index].type == FAN)
+  {
+    if(node[c_panel.index].data != node[c_panel.index].last_data){
+      if(node[c_panel.index].data == 0)
+      {
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 2, 33 - 4, 17 - 4, 3, c_panel.fillColor);
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 19 + 2, 33 - 4, 17 - 4, 3, c_panel.fillColor);
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 38 + 2, 33 - 4, 17 - 4, 3, c_panel.fillColor);
+      }
+      else if (node[c_panel.index].data == 1)
+      {
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 2, 33 - 4, 17 - 4, 3, c_panel.fillColor);
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 19 + 2, 33 - 4, 17 - 4, 3, c_panel.fillColor);
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 38 + 2, 33 - 4, 17 - 4, 3, c_panel.lineColor);
+      }
+      else if (node[c_panel.index].data == 2)
+      {
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 2, 33 - 4, 17 - 4, 3, c_panel.fillColor);
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 19 + 2, 33 - 4, 17 - 4, 3, c_panel.lineColor);
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 38 + 2, 33 - 4, 17 - 4, 3, c_panel.lineColor);
+      }
+      else if (node[c_panel.index].data == 3)
+      {
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 2, 33 - 4, 17 - 4, 3, c_panel.lineColor);
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 19 + 2, 33 - 4, 17 - 4, 3, c_panel.lineColor);
+        Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 38 + 2, 33 - 4, 17 - 4, 3, c_panel.lineColor);
+      }
+
+      this->node[c_panel.index].last_data = node[c_panel.index].data;
+    }
+  }
+  else if (node[c_panel.index].type == AIR)
+  {
+    if (node[c_panel.index].temp_data != node[c_panel.index].last_temp_data){
+
+      Lcd.setTextColor(backgroundColor);
+      Lcd.setTextSize(2);
+      Lcd.setCursor(160 - 75 + 113 + 5, 120 - 75 + 3 + 26 + 19);
+      Lcd.print(node[c_panel.index].last_temp_data);
+
+      Lcd.setTextColor(m.lineColor);
+      Lcd.setTextSize(2);
+      Lcd.setCursor(160 - 75 + 113 + 5, 120 - 75 + 3 + 26 + 19);
+      Lcd.print(node[c_panel.index].temp_data);
+
+      this->node[c_panel.index].last_temp_data = node[c_panel.index].temp_data;
+    }
   }
 }
 
@@ -446,7 +617,7 @@ void UI::node_setTitle(uint8_t index, String title_1st, String title_2nd)
 /*set node type for different control
   FAN   -> 4 level control 
   AIR   -> on/off and temperature control
-  LIGHT -> on/off and color control
+  LIGHT -> on/off
 */
 void UI::node_setType(uint8_t index, uint8_t typeSelect)
 {

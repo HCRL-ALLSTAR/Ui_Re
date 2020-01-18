@@ -62,9 +62,9 @@
 
 #define MAX_NODE 32
 #define MAX_SUB 32
-#define FAN 1
-#define AIR 2
-#define LIGHT 3
+#define FAN 2
+#define AIR 1
+#define LIGHT 0
 
 
 struct Node
@@ -82,7 +82,10 @@ struct Node
   uint16_t title2ndColor = WHITE;
   uint8_t titleSize = 2;
   uint8_t data = 0;
-  uint8_t type; // 1 : Fan, 2 : Air, 3 : Light
+  int8_t temp_data = 25;
+  int8_t last_temp_data = -1;
+  uint8_t last_data = -1;
+  uint8_t type; // 2 : Fan, 1 : Air, 0 : Light
 };
 
 class UI
@@ -122,12 +125,15 @@ private:
 #define STAT 1
 #define CONT 2
 #define SETT 3
+#define AIRCONT 10
 #define RETURN_MS 1000
 #define POS_RETURN_MS 200
+#define AC_RETURN_MS 600
   //
   uint8_t panel = 0;
+  uint8_t sub_panel = 0;
   //
-  unsigned long long time, counter,return_c;
+  unsigned long long time, counter,return_c,return_ac;
   bool isInited;
   uint8_t idealRefreshRate = 5;
   uint8_t refreshRate = 5;
@@ -137,9 +143,11 @@ private:
   //
   struct Menu
   {
-    const String BACK = "  Back  ";
-    const String OK = "   Ok   ";
-    const String NEXT = "  Next  ";
+    const String BACK   = "  Back  ";
+    const String OK     = "   Ok   ";
+    const String NEXT   = "  Next  ";
+    const String PLUS   = "   ++   ";
+    const String MINUS  = "   --   ";
     uint16_t fillColor = BLACK;
     uint16_t lineColor = WHITE;
     uint16_t battFillColor = WHITE;
@@ -203,6 +211,8 @@ private:
     uint16_t titleColor = WHITE;
     uint8_t titleSize = 3;
     String title = "Control";
+    String up = " +";
+    String down = " -";
   };
   Cont_panel c_panel;
   void cont_panel();
