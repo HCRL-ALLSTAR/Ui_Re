@@ -1,6 +1,7 @@
 #ifndef HCRL_Edu_H
 #define HCRL_Edu_H
 #include <Arduino.h>
+#include "UI.h"
 #include "MQTT/MqttTask.h"
 #include "WiFi/WiFiTask.h"
 #include "Sensors/ENVs/ENVs.h"
@@ -17,6 +18,10 @@ private:
 public:
     HCRL_Edu(/* args */);
     ~HCRL_Edu();
+    /* 
+    Access to UI
+     */
+    UI Ui;
     /* 
     Access to ENV Sensor
      */
@@ -63,6 +68,16 @@ HCRL_Edu::~HCRL_Edu()
 for delay loop task and give other task running */
 void HCRL_Edu::Update()
 {
+    Serial.println(WiFi.getSSID());
+    Ui.wifi_ssid_set(WiFi.getSSID());
+    Ui.wifi_status_set(WiFi.getStatus());
+    Ui.mqtt_ip_set(MQTT.GetServer());
+    Ui.mqtt_status_set(MQTT.getStatus());
+    Ui.temp_set(ENV.GetTemp());
+    Ui.humid_set(ENV.GetHumi());
+    Ui.pa_set(ENV.GetPressure());
+    Ui.motion_set(Motion.GetValue());
+    Ui.update();
     TaskDelay(delay_Time);
 }
 

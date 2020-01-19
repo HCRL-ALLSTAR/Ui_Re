@@ -116,7 +116,15 @@ public:
   void node_setAllTitleColor(uint16_t title_1st, uint16_t title_2nd);
   void node_setTitlePic(uint8_t index, char *base_path, char *hover_path);
   void node_setType(uint8_t index, uint8_t typeSelect);
-
+  //
+  void wifi_ssid_set(char* ssid);
+  void wifi_status_set(bool status);
+  void mqtt_ip_set(char* ip);
+  void mqtt_status_set(bool status);
+  void temp_set(float temp);
+  void humid_set(float humid);
+  void pa_set(float pressure);
+  void motion_set(int motion);
 private:
 //custom RGB565
 #define AQUA 0x4B1D
@@ -140,6 +148,13 @@ private:
   uint8_t period; // 1000/refreshRate miliseconds per frame
   uint16_t backgroundColor = BLACK;
   int fps = 0;
+  //
+  String wifi_ssid, mqtt_ip, wifi_status, mqtt_status;
+  String last_wifi_ssid, last_mqtt_ip, last_wifi_status, last_mqtt_status;
+  float temp, humid, pa;
+  float last_temp = -1, last_humid = -1, last_pa = -1;
+  int motion;
+  int last_motion = -1;
   //
   struct Menu
   {

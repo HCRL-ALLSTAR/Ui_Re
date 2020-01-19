@@ -326,6 +326,78 @@ void UI::stat_panel()
   Lcd.setCursor(10, 10);
   Lcd.setTextSize(sa_panel.titleSize);
   Lcd.print(sa_panel.title);
+
+  Lcd.setTextSize(2);
+  Lcd.setCursor(0,40);
+  Lcd.printf(" WiFi SSID: ");
+  if(wifi_ssid != last_wifi_ssid)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(),200,20, backgroundColor);
+    this->last_wifi_ssid = wifi_ssid;
+  }
+  Lcd.println(wifi_ssid);
+  Lcd.printf(" WiFi Status: ");
+  if (wifi_status != last_wifi_status)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
+    this->last_wifi_status = wifi_status;
+  }
+  Lcd.println(wifi_status);
+  Lcd.println("");
+  Lcd.setTextColor(RED);
+  Lcd.printf(" Temperature: ");
+  if (temp != last_temp)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
+    this->last_temp = temp;
+  }
+  Lcd.printf("%.2f\n", temp);
+  Lcd.setTextColor(GREEN);
+  Lcd.printf(" Humidity: ");
+  if (humid != last_humid)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
+    this->last_humid = humid;
+  }
+  Lcd.printf("%.2f\n", humid);
+  Lcd.setTextColor(AQUA);
+  Lcd.printf(" Pressure: ");
+  if (pa != last_pa)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
+    this->last_pa = pa;
+  }
+  Lcd.printf("%.2f\n\n", pa);
+  Lcd.setTextColor(sa_panel.titleColor);
+  Lcd.printf(" MQTT IP: ");
+  if (mqtt_ip != last_mqtt_ip)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
+    this->last_mqtt_ip = mqtt_ip;
+  }
+  Lcd.println(mqtt_ip);
+  Lcd.printf(" MQTT Status: ");
+  if (mqtt_status != last_mqtt_status)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
+    this->last_mqtt_status = mqtt_status;
+  }
+  Lcd.println(mqtt_status);
+  Lcd.setTextColor(YELLOW);
+  Lcd.printf(" PIR: ");
+  if (motion != last_motion)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
+    this->last_motion = motion;
+  }
+  Lcd.printf("%d\n", motion);
+  Lcd.setTextColor(CYAN);
+  Lcd.printf(" Battery Level: ");
+  if (batt.getLevel() != m.lastLevel)
+  {
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
+  }
+  Lcd.printf("%d\n", batt.getLevel());
 }
 
 void UI::cont_panel()
@@ -662,4 +734,45 @@ void UI::node_setAllTitleColor(uint16_t title_1st, uint16_t title_2nd)
     this->node[i].title1stColor = title_1st;
     this->node[i].title2ndColor = title_2nd;
   }
+}
+
+//set wifi ssid
+void UI::wifi_ssid_set(char* ssid){
+  this->wifi_ssid = ssid;
+}
+//set wifi status
+void UI::wifi_status_set(bool status){
+  if(status)
+    this->wifi_status = "Connected";
+  else
+    this->wifi_status = "Disconnected";
+}
+//set mqtt ip address
+void UI::mqtt_ip_set(char *ip)
+{
+  this->mqtt_ip = ip;
+}
+//set mqtt status
+void UI::mqtt_status_set(bool status)
+{
+  if (status)
+    this->mqtt_status = "Connected";
+  else
+    this->mqtt_status = "Disconnected";
+}
+//set temperature
+void UI::temp_set(float temp){
+  this->temp = temp;
+}
+//set humidity
+void UI::humid_set(float humid){
+  this->humid = humid;
+}
+//set pressure
+void UI::pa_set(float pressure){
+  this->pa = pressure;
+}
+//set pir value
+void UI::motion_set(int motion){
+  this->motion = motion;
 }
