@@ -2,9 +2,20 @@
 #include <HCRL_Edu.h>
 
 HCRL_Edu hcrl;
+void callback(char *Topic, byte *Paylaod, unsigned int Length)
+{
+	Paylaod[Length] = '\0';
+	String topic_str = Topic, payload_str = (char *)Paylaod;
+	Serial.println("[" + topic_str + "]: " + payload_str);
+}
+
 void setup(void)
 {
+
 	hcrl.Ui.begin();
+	hcrl.WiFi.Begin(HCRL_WiFi_SSID, HCRL_WiFi_PASS);
+	hcrl.MQTT.begin(HCRL_MQTT_SERVER, HCRL_MQTT_PORT, callback);
+	hcrl.MQTT.startSubscribe("/test");
 	hcrl.Ui.node_init(5);
 	for (int i = 0; i < 5; i++)
 	{
@@ -30,5 +41,6 @@ void setup(void)
 }
 void loop(void)
 {
+	hcrl.MQTT.publish("/testPub", "Hello From M5");
 	hcrl.update();
 }
