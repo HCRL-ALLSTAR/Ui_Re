@@ -12,7 +12,7 @@ void callback(char *Topic, byte *Paylaod, unsigned int Length)
 void setup(void)
 {
 
-	hcrl.Ui.begin();
+	//hcrl.Ui.begin();
 	hcrl.WiFi.Begin(HCRL_WiFi_SSID, HCRL_WiFi_PASS);
 	hcrl.MQTT.begin(HCRL_MQTT_SERVER, HCRL_MQTT_PORT, callback);
 	hcrl.MQTT.startSubscribe("/test");
