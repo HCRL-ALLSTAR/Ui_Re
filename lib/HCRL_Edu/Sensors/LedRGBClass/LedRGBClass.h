@@ -18,9 +18,9 @@ private:
 public:
     LedRGBClass(/* args */);
     ~LedRGBClass();
-    void Begin();
+    void begin();
     void setPixelsColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
-    void SetBrightness(int Value);
+    void setBrightness(int Value);
 };
 
 LedRGBClass::LedRGBClass(/* args */)
@@ -44,9 +44,9 @@ void LedRGBClass::UpdateCode(void *pv)
 }
 
 /*
-    Begin Led RGB
+    begin Led RGB
 */
-void LedRGBClass::Begin()
+void LedRGBClass::begin()
 {
     pixels.begin();
     xTaskCreate(UpdateCode, "Pixels Update Task", Default_Task_Stack, this, 1, &UpdateHandle);
@@ -65,10 +65,10 @@ void LedRGBClass::setPixelsColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b)
 }
 
 /*
-    Set Brightness of all led
+    Set Brightness of all ledB
     value -> Brightness value (max 255)
 */
-void LedRGBClass::SetBrightness(int Value)
+void LedRGBClass::setBrightness(int Value)
 {
     this->pixels.setBrightness(Value);
 }

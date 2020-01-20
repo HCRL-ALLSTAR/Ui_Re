@@ -16,8 +16,8 @@ private:
 public:
     AngleClass(/* args */);
     ~AngleClass();
-    void Begin();
-    int GetValue();
+    void begin();
+    int getValue();
 };
 
 AngleClass::AngleClass(/* args */)
@@ -29,9 +29,9 @@ AngleClass::~AngleClass()
 }
 
 /*
-    Begin angle sensor Task
+    begin angle sensor Task
 */
-void AngleClass::Begin()
+void AngleClass::begin()
 {
     pinMode(sensorPin, INPUT);
     dacWrite(25, 0);
@@ -41,7 +41,7 @@ void AngleClass::Begin()
 /*
     Get Current Angle Value
 */
-int AngleClass::GetValue()
+int AngleClass::getValue()
 {
     return this->last_sensorValue;
 }

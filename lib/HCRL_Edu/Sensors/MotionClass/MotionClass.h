@@ -16,8 +16,8 @@ private:
 public:
     MotionClass(/* args */);
     ~MotionClass();
-    void Begin();
-    int GetValue();
+    void begin();
+    int getValue();
 };
 
 MotionClass::MotionClass(/* args */)
@@ -29,9 +29,9 @@ MotionClass::~MotionClass()
 }
 
 /*
-    Begin Motion Sensor
+    begin Motion Sensor
 */
-void MotionClass::Begin()
+void MotionClass::begin()
 {
     pinMode(36, INPUT);
     xTaskCreate(UpdateCode, "Motion Update Task", Default_Task_Stack, this, 1, &UpdateHandle);
@@ -39,7 +39,7 @@ void MotionClass::Begin()
 /*
     Get Current Value ( 0 || 1 )
 */
-int MotionClass::GetValue()
+int MotionClass::getValue()
 {
     return this->value;
 }

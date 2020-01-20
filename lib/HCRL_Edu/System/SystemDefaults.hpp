@@ -10,6 +10,4 @@
 #define HCRL_MQTT_PORT 1883
 #define Default_Task_Stack 4096
 #define MAX_LIST_SIZE 100
-
-#define MQTT_UPDATE_TASk "Mqtt Update Task"
 #endif

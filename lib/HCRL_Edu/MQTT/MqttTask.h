@@ -3,37 +3,39 @@
 
 #include <Arduino.h>
 #include <WiFiClient.h>
+#include <PubSubClient.h>
 #include "System/SystemDefaults.hpp"
 #include "System/SystemMacros.hpp"
 #include "MqttWrapper/MqttWrapper.h"
-#include "MqttWrapper\PubSubClient\PubSubClient.h"
 
 class MqttTask
 {
 private:
     MqttWrapper wrapper;
-    TaskHandle_t UpdateHandle;
+    TaskHandle_t updateHandle;
 
     boolean isNewTopic = false;
 
-    static void UpdateCode(void *);
-    void Update();
-    char *UserName;
-    char *Password;
+    static void updateCode(void *);
+    void update();
+    char *username;
+    char *password;
 
 public:
     MqttTask(/* args */);
     ~MqttTask();
-    void Begin(const char *Server, int Port, MQTT_CALLBACK_SIGNATURE);
-    void StartSubscribe(const char *Topic);
-    void Publish(const char *Topic, const char *Payload);
-    void SetUser(const char *UserName, const char *Password);
+    void begin(const char *Server, int Port, MQTT_CALLBACK_SIGNATURE);
+    void startSubscribe(const char *Topic);
+    void publish(const char *Topic, const char *Payload);
+    void setUser(const char *username, const char *password);
 
-    void PrintSubscribeTopic();
-    void PrintPublishTopic();
+    void printSubscribeTopic();
+    void printpublishTopic();
     boolean getStatus();
-    char *GetServer();
-    int GetPort();
+    char *getServer();
+    int getPort();
+    char *getUsername();
+    char *getPassword();
 };
 
 MqttTask::MqttTask(/* args */)
@@ -45,7 +47,7 @@ MqttTask::~MqttTask()
 }
 
 /*
-    Begin Mqtt Connection
+    begin Mqtt Connection
     Server  -> Mqtt Server Address
     Port    -> Mqtt Server Port 
     MQTT_CALLBACK_SIGNATURE -> Callback Function in form 
@@ -57,25 +59,25 @@ MqttTask::~MqttTask()
         Serial.println("[" + topic_str + "]: " + payload_str);
     }
 */
-void MqttTask::Begin(const char *Server, int Port, MQTT_CALLBACK_SIGNATURE)
+void MqttTask::begin(const char *Server, int Port, MQTT_CALLBACK_SIGNATURE)
 {
     this->wrapper.Begin(Server, Port, callback);
-    this->Update();
+    this->update();
 }
 
-void MqttTask::Update()
+void MqttTask::update()
 {
-    xTaskCreate(UpdateCode, MQTT_UPDATE_TASk, Default_Task_Stack, this, 1, &UpdateHandle);
+    xTaskCreate(updateCode, "MQTT UPDATE TASK", Default_Task_Stack, this, 1, &updateHandle);
 }
 
-void MqttTask::UpdateCode(void *pv)
+void MqttTask::updateCode(void *pv)
 {
     MqttTask *task = (MqttTask *)(pv);
     for (;;)
     {
         if (task->isNewTopic || task->wrapper.SubscribeTopic[0].length() == 0)
         {
-            //vTaskDelete(task->UpdateHandle);
+            //vTaskDelete(task->updateHandle);
             task->wrapper.Update();
             task->isNewTopic = false;
         }
@@ -87,46 +89,46 @@ void MqttTask::UpdateCode(void *pv)
     }
 }
 /*
-    *** Please Add After Begin Connection ***
+    *** Please Add After begin Connection ***
     Start Subscribe to Your Topic 
 */
-void MqttTask::StartSubscribe(const char *Topic)
+void MqttTask::startSubscribe(const char *Topic)
 {
     this->wrapper.StartSubscribe(Topic);
     this->isNewTopic = true;
 }
 
 /*  
-    Start Publish To Topic 
+    Start publish To Topic 
 */
-void MqttTask::Publish(const char *Topic, const char *Payload)
+void MqttTask::publish(const char *Topic, const char *Payload)
 {
     this->wrapper.Publish(Topic, Payload);
 }
 
 /*
-    Set Your UserName And Password if you need
-    UserName -> UserName in Mqtt Broker
-    PassWord -> Password in Mqtt Broker
+    Set Your username And password if you need
+    username -> username in Mqtt Broker
+    password -> password in Mqtt Broker
 */
-void MqttTask::SetUser(const char *UserName, const char *Password)
+void MqttTask::setUser(const char *username, const char *password)
 {
-    this->UserName = (char *)UserName;
-    this->Password = (char *)Password;
-    this->wrapper.SetUser(this->UserName, this->Password);
+    this->username = (char *)username;
+    this->password = (char *)password;
+    this->wrapper.SetUser(this->username, this->password);
 }
 
 /*
     Print All Subscribe Topic
 */
-void MqttTask::PrintSubscribeTopic()
+void MqttTask::printSubscribeTopic()
 {
     this->wrapper.PrintSubscribeTopic();
 }
 /*
-    Print All Publish Topic 
+    Print All publish Topic 
 */
-void MqttTask::PrintPublishTopic()
+void MqttTask::printpublishTopic()
 {
     this->wrapper.PrintPublishTopic();
 }
@@ -142,7 +144,7 @@ boolean MqttTask::getStatus()
 /*
     Get Mqtt Server Address
 */
-char *MqttTask::GetServer()
+char *MqttTask::getServer()
 {
     return this->wrapper.GetServer();
 }
@@ -150,9 +152,17 @@ char *MqttTask::GetServer()
 /*
     Get Mqtt Server Port
 */
-int MqttTask::GetPort()
+int MqttTask::getPort()
 {
     return this->wrapper.GetPort();
+}
+char *MqttTask::getUsername()
+{
+    return this->username;
+}
+char *MqttTask::getPassword()
+{
+    return this->password;
 }
 
 #endif

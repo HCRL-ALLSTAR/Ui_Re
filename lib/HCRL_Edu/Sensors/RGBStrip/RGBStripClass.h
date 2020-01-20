@@ -20,9 +20,9 @@ private:
 public:
     RGBStrip(/* args */);
     ~RGBStrip();
-    void Begin();
+    void begin();
     void setPixelsColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
-    void SetBrightness(int Value);
+    void setBrightness(int Value);
 };
 
 RGBStrip::RGBStrip(/* args */)
@@ -46,9 +46,9 @@ void RGBStrip::UpdateCode(void *pv)
 }
 
 /*
-    Begin Led rgb strip
+    begin Led rgb strip
 */
-void RGBStrip::Begin()
+void RGBStrip::begin()
 {
     pixels.begin();
     xTaskCreate(UpdateCode, "Pixels Update Task", Default_Task_Stack, this, 1, &UpdateHandle);
@@ -70,7 +70,7 @@ void RGBStrip::setPixelsColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b)
     Set Brightness of all led
     value -> Brightness value (max 255)
 */
-void RGBStrip::SetBrightness(int Value)
+void RGBStrip::setBrightness(int Value)
 {
     this->pixels.setBrightness(Value);
 }

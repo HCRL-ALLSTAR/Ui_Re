@@ -27,10 +27,10 @@ private:
 public:
     ENVs(/* args */);
     ~ENVs();
-    void Begin();
-    float GetTemp();
-    float GetHumi();
-    float GetPressure();
+    void begin();
+    float getTemp();
+    float getHumi();
+    float getPressure();
 };
 
 ENVs::ENVs(/* args */)
@@ -42,9 +42,9 @@ ENVs::~ENVs()
 }
 
 /*
-    Begin ENV Sensor Task
+    begin ENV Sensor Task
 */
-void ENVs::Begin()
+void ENVs::begin()
 {
     Wire.begin();
     while (!this->bme.begin(0x76))
@@ -57,7 +57,7 @@ void ENVs::Begin()
 /*
     Get Current Temperature in c
 */
-float ENVs::GetTemp()
+float ENVs::getTemp()
 {
     return this->temp;
 }
@@ -65,7 +65,7 @@ float ENVs::GetTemp()
 /*
     Get Current Humidity
 */
-float ENVs::GetHumi()
+float ENVs::getHumi()
 {
     return this->humi;
 }
@@ -73,7 +73,7 @@ float ENVs::GetHumi()
 /*
     Get Current Pressure in Pa
 */
-float ENVs::GetPressure()
+float ENVs::getPressure()
 {
     return this->pressure;
 }
