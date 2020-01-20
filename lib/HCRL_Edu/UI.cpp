@@ -8,9 +8,20 @@
 UI::UI() : isInited(0)
 {
 }
+
+void UI::updateCode(void *pv)
+{
+  UI *task = (UI *)(pv);
+  for (;;)
+  {
+    task->update();
+    TaskDelay(delay_Time);
+  }
+}
 //init UI
 void UI::begin(bool LCDEnable, bool SDEnable, bool SerialEnable)
 {
+  xTaskCreate(updateCode, "Ui update task", 4096, this, 10, &updateHandle);
   // Correct init once
   if (isInited == true)
   {
@@ -80,12 +91,12 @@ void UI::update()
     }
     if (panel == CONT)
     {
-      if(sub_panel == MAIN)
+      if (sub_panel == MAIN)
       {
         this->c_panel.lastIndex = -1;
         this->panel = MAIN;
       }
-      else if(sub_panel == AIRCONT)
+      else if (sub_panel == AIRCONT)
       {
         this->node[c_panel.index].temp_data -= 1;
       }
@@ -97,18 +108,17 @@ void UI::update()
     }
   }
 
-  if(BtnB.pressedFor(RETURN_MS))
+  if (BtnB.pressedFor(RETURN_MS))
   {
-    if(panel == MAIN)
+    if (panel == MAIN)
     {
-
     }
-    else if(panel == STAT)
+    else if (panel == STAT)
     {
     }
     else if (panel == CONT)
     {
-      if(node[c_panel.index].type == AIR && sub_panel == MAIN)
+      if (node[c_panel.index].type == AIR && sub_panel == MAIN)
       {
         Lcd.setTextColor(backgroundColor);
         Lcd.setTextSize(2);
@@ -151,9 +161,9 @@ void UI::update()
     }
     else if (panel == CONT && millis() - return_ac > AC_RETURN_MS)
     {
-      if(sub_panel == MAIN)
+      if (sub_panel == MAIN)
       {
-        if(node[c_panel.index].type == FAN)
+        if (node[c_panel.index].type == FAN)
         {
           this->node[c_panel.index].data++;
           if (node[c_panel.index].data == 4)
@@ -162,7 +172,7 @@ void UI::update()
         else
           this->node[c_panel.index].data = !node[c_panel.index].data;
       }
-      else if(sub_panel == AIRCONT)
+      else if (sub_panel == AIRCONT)
       {
         Lcd.setTextColor(backgroundColor);
         Lcd.setTextSize(2);
@@ -198,7 +208,6 @@ void UI::update()
       }
       else if (sub_panel == AIRCONT)
       {
-
       }
     }
   }
@@ -328,11 +337,11 @@ void UI::stat_panel()
   Lcd.print(sa_panel.title);
 
   Lcd.setTextSize(2);
-  Lcd.setCursor(0,40);
+  Lcd.setCursor(0, 40);
   Lcd.printf(" WiFi SSID: ");
-  if(wifi_ssid != last_wifi_ssid)
+  if (wifi_ssid != last_wifi_ssid)
   {
-    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(),200,20, backgroundColor);
+    Lcd.fillRect(Lcd.getCursorX(), Lcd.getCursorY(), 200, 20, backgroundColor);
     this->last_wifi_ssid = wifi_ssid;
   }
   Lcd.println(wifi_ssid);
@@ -402,12 +411,12 @@ void UI::stat_panel()
 
 void UI::cont_panel()
 {
-  if(sub_panel == MAIN)
+  if (sub_panel == MAIN)
   {
     this->m.leftText = m.BACK;
     this->m.rightText = m.NEXT;
   }
-  else if(sub_panel == AIRCONT)
+  else if (sub_panel == AIRCONT)
   {
     this->m.leftText = m.MINUS;
     this->m.rightText = m.PLUS;
@@ -451,17 +460,20 @@ void UI::cont_panel()
     Lcd.drawRoundRect(160 - 75, 120 - 75, 150, 150, 5, c_panel.lineColor);
 
     uint8_t offset_x;
-    if(!node[c_panel.index].type){
+    if (!node[c_panel.index].type)
+    {
       offset_x = 0;
-    }else{
+    }
+    else
+    {
       offset_x = 18;
     }
-    if(!node[c_panel.index].data)
+    if (!node[c_panel.index].data)
       Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic, 160 - 75 + 22 - offset_x, 120 - 75 + 3);
     else
       Lcd.drawPngFile(SPIFFS, node[c_panel.index].titlePic_Hover, 160 - 75 + 22 - offset_x, 120 - 75 + 3);
 
-    if(node[c_panel.index].type == FAN)
+    if (node[c_panel.index].type == FAN)
     {
       Lcd.setTextColor(m.lineColor);
       Lcd.setTextSize(2);
@@ -485,7 +497,7 @@ void UI::cont_panel()
 
       Lcd.drawRoundRect(160 - 75 + 113, 120 - 75 + 3 + 26, 33, 51, 5, c_panel.lineColor);
     }
-    
+
     Lcd.setTextSize(node[c_panel.index].titleSize);
     Lcd.setCursor(160 - 75 + 5, 120 + 75 - 10 - 10 - 20);
     Lcd.print(node[c_panel.index].title_1st);
@@ -497,8 +509,9 @@ void UI::cont_panel()
   }
   if (node[c_panel.index].type == FAN)
   {
-    if(node[c_panel.index].data != node[c_panel.index].last_data){
-      if(node[c_panel.index].data == 0)
+    if (node[c_panel.index].data != node[c_panel.index].last_data)
+    {
+      if (node[c_panel.index].data == 0)
       {
         Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 2, 33 - 4, 17 - 4, 3, c_panel.fillColor);
         Lcd.fillRoundRect(160 - 75 + 113 + 2, 120 - 75 + 3 + 26 + 19 + 2, 33 - 4, 17 - 4, 3, c_panel.fillColor);
@@ -528,7 +541,8 @@ void UI::cont_panel()
   }
   else if (node[c_panel.index].type == AIR)
   {
-    if (node[c_panel.index].temp_data != node[c_panel.index].last_temp_data){
+    if (node[c_panel.index].temp_data != node[c_panel.index].last_temp_data)
+    {
 
       Lcd.setTextColor(backgroundColor);
       Lcd.setTextSize(2);
@@ -608,10 +622,12 @@ void UI::batteryUpdate()
 {
   Lcd.drawRoundRect(270, 8, 38, 17, 5, m.battFillColor);
   uint8_t currentLevel = batt.getLevel();
-  if(currentLevel <= 25){
-    this->m.battFillColor = m.lowBattFillColor; 
+  if (currentLevel <= 25)
+  {
+    this->m.battFillColor = m.lowBattFillColor;
   }
-  else{
+  else
+  {
     this->m.battFillColor = m.defaultBattFillColor;
   }
   if (currentLevel != m.lastLevel)
@@ -737,12 +753,14 @@ void UI::node_setAllTitleColor(uint16_t title_1st, uint16_t title_2nd)
 }
 
 //set wifi ssid
-void UI::wifi_ssid_set(char* ssid){
+void UI::wifi_ssid_set(char *ssid)
+{
   this->wifi_ssid = ssid;
 }
 //set wifi status
-void UI::wifi_status_set(bool status){
-  if(status)
+void UI::wifi_status_set(bool status)
+{
+  if (status)
     this->wifi_status = "Connected";
   else
     this->wifi_status = "Disconnected";
@@ -761,18 +779,22 @@ void UI::mqtt_status_set(bool status)
     this->mqtt_status = "Disconnected";
 }
 //set temperature
-void UI::temp_set(float temp){
+void UI::temp_set(float temp)
+{
   this->temp = temp;
 }
 //set humidity
-void UI::humid_set(float humid){
+void UI::humid_set(float humid)
+{
   this->humid = humid;
 }
 //set pressure
-void UI::pa_set(float pressure){
+void UI::pa_set(float pressure)
+{
   this->pa = pressure;
 }
 //set pir value
-void UI::motion_set(int motion){
+void UI::motion_set(int motion)
+{
   this->motion = motion;
 }

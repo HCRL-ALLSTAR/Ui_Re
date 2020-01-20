@@ -66,7 +66,6 @@
 #define AIR 1
 #define LIGHT 0
 
-
 struct Node
 {
   bool EN = false;
@@ -74,8 +73,8 @@ struct Node
   {
   };
   Sub_node sub[MAX_SUB];
-  char*  titlePic;
-  char* titlePic_Hover;
+  char *titlePic;
+  char *titlePic_Hover;
   String title_1st;
   String title_2nd;
   uint16_t title1stColor = WHITE;
@@ -93,7 +92,7 @@ class UI
 public:
   UI();
   void begin(bool LCDEnable = true, bool SDEnable = true, bool SerialEnable = true);
-  void update();
+
   void setBrightness(uint8_t brightness);
   void main();
 // Button API
@@ -112,19 +111,20 @@ public:
   uint8_t node_size;
   void node_init(uint8_t size = 1);
   void node_setTitle(uint8_t index, String title_1st = "", String title_2nd = "");
-  void node_setTitleColor(uint8_t index,uint16_t title_1st, uint16_t title_2nd);
+  void node_setTitleColor(uint8_t index, uint16_t title_1st, uint16_t title_2nd);
   void node_setAllTitleColor(uint16_t title_1st, uint16_t title_2nd);
   void node_setTitlePic(uint8_t index, char *base_path, char *hover_path);
   void node_setType(uint8_t index, uint8_t typeSelect);
   //
-  void wifi_ssid_set(char* ssid);
+  void wifi_ssid_set(char *ssid);
   void wifi_status_set(bool status);
-  void mqtt_ip_set(char* ip);
+  void mqtt_ip_set(char *ip);
   void mqtt_status_set(bool status);
   void temp_set(float temp);
   void humid_set(float humid);
   void pa_set(float pressure);
   void motion_set(int motion);
+
 private:
 //custom RGB565
 #define AQUA 0x4B1D
@@ -141,7 +141,7 @@ private:
   uint8_t panel = 0;
   uint8_t sub_panel = 0;
   //
-  unsigned long long time, counter,return_c,return_ac;
+  unsigned long long time, counter, return_c, return_ac;
   bool isInited;
   uint8_t idealRefreshRate = 5;
   uint8_t refreshRate = 5;
@@ -158,11 +158,11 @@ private:
   //
   struct Menu
   {
-    const String BACK   = "  Back  ";
-    const String OK     = "   Ok   ";
-    const String NEXT   = "  Next  ";
-    const String PLUS   = "   ++   ";
-    const String MINUS  = "   --   ";
+    const String BACK = "  Back  ";
+    const String OK = "   Ok   ";
+    const String NEXT = "  Next  ";
+    const String PLUS = "   ++   ";
+    const String MINUS = "   --   ";
     uint16_t fillColor = BLACK;
     uint16_t lineColor = WHITE;
     uint16_t battFillColor = WHITE;
@@ -249,6 +249,9 @@ private:
   //
   Node node[MAX_NODE];
   //
+  TaskHandle_t updateHandle;
+  static void updateCode(void *);
+  void update();
 };
 #else
 #error “This library only supports boards with ESP32 processor.”
